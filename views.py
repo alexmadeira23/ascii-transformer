@@ -4,7 +4,7 @@ from tkinter import filedialog
 from logic import *
 
 root = tk.Tk()
-root.withdraw() # if there isnt any toher gui element
+root.withdraw() # if there isnt any other gui element
 
 file_path = filedialog.askopenfilename()
 
@@ -13,13 +13,28 @@ img = imageio.imread(file_path)
 height = img.shape[0]
 width = img.shape[1]
 
-print(height)
-print(width)
+file = open("output.txt", "a")
 
-for y in range(height):
-    for x in range(width):
-        pixel = img[y, x]
-        r = int(pixel[0])
-        g = int(pixel[1])
-        b = int(pixel[2])
-        grayscale = get_grayscale(r, g, b)
+jump_value = 2
+
+y = 0
+while y < height:
+    line = ""
+    x = 0
+    while x < width:
+        grayscales = []
+        for _ in range(jump_value):
+            if x >= width:
+                break
+            pixel = img[y, x]
+            r = int(pixel[0])
+            g = int(pixel[1])
+            b = int(pixel[2])
+            grayscales.append(get_grayscale(r, g, b))
+            x = x + 1
+        line += get_char(average(grayscales))
+    print(line)
+    file.write(line)
+    y = y + jump_value
+
+file.close()
