@@ -1,6 +1,7 @@
 from PIL import Image, ImageTk
 from tkinter import filedialog
 import PySimpleGUI as sg
+import cv2
 from logic import *
 
 sg.theme('DarkGrey13') 
@@ -46,6 +47,10 @@ def app():
                 print_ascii(copy, window["-OUTPUT-"])
             else:
                 sg.popup("You need to select an image first!", no_titlebar=True, button_type=5, auto_close=True, auto_close_duration=1)
+        
+        elif event == "Webcam":
+            webcam(window["-OUTPUT-"])
+
 
     window.close()
 
@@ -85,6 +90,29 @@ def print_ascii(img, output=None):
                 output.update(output.get() + "\n" + line)
         else:
             print(line)
+
+def webcam(output=None):
+    cam = cv2.VideoCapture(0)
+    #cv2.namedWindow("test")
+
+    while True:
+        ret, frame = cam.read()
+
+        if not ret:
+            print("failed to grab frame")
+            break
+    
+        # flip the image
+        flip = cv2.flip(frame,1)
+
+        #cv2.imshow("test", flip)
+        image = Image.fromarray(flip)
+        image.thumbnail(get_new_size(image.size[0], image.size[1], 7), resample=Image.Resampling.BICUBIC)
+        print_ascii(image, output)
+
+    cam.release()
+
+    #cv2.destroyAllWindows()
 
 def main():
     app()
