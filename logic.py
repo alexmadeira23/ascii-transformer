@@ -21,6 +21,9 @@ def get_char(v):
     index = math.floor(v * (chars_size - 1) / max_intensity)
     return chars[index]
 
+def get_new_size(width, height, res_decrease):
+    return (math.floor(width / res_decrease), math.floor(height / res_decrease))
+
 def main():
     print(get_char(254))
     print(get_char(200))

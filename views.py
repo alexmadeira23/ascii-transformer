@@ -6,17 +6,17 @@ from logic import *
 sg.theme('DarkGrey13') 
 
 def app():
-    image = None
+    current_image = None
     resolution_decrease = 1
 
     layout = [
-        [sg.Button('Choose photo'),
-        [sg.Text("Resolution decrease: ", justification="center"), sg.Slider(range=(1, 100), expand_x=True, orientation="h", key='-SLIDER-')],
-        [sg.Image(size=(300, 300), key="-IMAGE-"), sg.Multiline(size=(100, 30), disabled=True, background_color="black", text_color="white", font="consolas", key='-OUTPUT-')]],
-        [sg.Button('Transform'), sg.Button('Quit')]
+        [sg.Text("Resolution decrease:", pad=((0, 0), (15, 0)), justification="center"), sg.Slider(range=(1, 100), expand_x=True, orientation="h", key='-SLIDER-')],
+        [sg.Image(size=(200, 200), key="-IMAGE-"), sg.Multiline(size=(100, 20), disabled=True, expand_x=True, expand_y=True, background_color="black", text_color="white", font="consolas", key='-OUTPUT-')],
+        [sg.Button('Choose image', expand_x=True)],
+        [sg.Button('Transform image', expand_x=True), sg.Button('Webcam', expand_x=True), sg.Button('Quit', expand_x=True)]
     ]
 
-    window = sg.Window('Ascii Transformer', layout, finalize=True)
+    window = sg.Window('Ascii Transformer', layout, resizable=True, finalize=True)
     window['-SLIDER-'].bind('<ButtonRelease-1>', ' Release')
 
     while True:
@@ -25,48 +25,47 @@ def app():
         if event == sg.WINDOW_CLOSED or event == 'Quit':
             break
 
-        elif event == "Choose photo":
+        elif event == "Choose image":
             file_path = filedialog.askopenfilename()
             if file_path != "":
-                image = Image.open(file_path)
-                image = image.resize(image.size, resample=Image.Resampling.BICUBIC)
-                photo_image = ImageTk.PhotoImage(image=image)
+                current_image = Image.open(file_path)
+                thumbnail = current_image.copy()
+                thumbnail.thumbnail((200, 1000), resample=Image.Resampling.BICUBIC)
+                photo_image = ImageTk.PhotoImage(image=thumbnail)
                 window["-IMAGE-"].update(data=photo_image)
 
         elif event == '-SLIDER- Release':
-            height = image.size[1]
-            width = image.size[0]
             resolution_decrease = values['-SLIDER-']
-            img = image.resize((math.floor(width / resolution_decrease), math.floor(height / resolution_decrease)), resample=Image.Resampling.BICUBIC)
-            photo_img = ImageTk.PhotoImage(image=img)
-            window["-IMAGE-"].update(data=photo_img)
 
-        elif event == 'Transform':
-            height = image.size[1]
-            width = image.size[0]
-            img = image.resize((math.floor(width / resolution_decrease), math.floor(height / resolution_decrease)), resample=Image.Resampling.BICUBIC)
-            output = window["-OUTPUT-"]
-            output.update("")
-            print_ascii(img, output)
+        elif event == 'Transform image':
+            if current_image != None:
+                width = current_image.size[0]
+                height = current_image.size[1]
+                copy = current_image.copy()
+                copy.thumbnail(get_new_size(width, height, resolution_decrease), resample=Image.Resampling.BICUBIC)
+                print_ascii(copy, window["-OUTPUT-"])
+            else:
+                sg.popup("You need to select an image first!", no_titlebar=True, button_type=5, auto_close=True, auto_close_duration=1)
 
     window.close()
 
 def console_app():
     file_path = filedialog.askopenfilename()
     img = Image.open(file_path)
-    img.show()
 
     height = img.size[1]
     width = img.size[0]
 
     resolution_decrease = 2
 
-    img = img.resize((math.floor(width / resolution_decrease), math.floor(height / resolution_decrease)), resample=Image.Resampling.BICUBIC)
-    img.show()
+    img.thumbnail((math.floor(width / resolution_decrease), math.floor(height / resolution_decrease)), resample=Image.Resampling.BICUBIC)
 
     print_ascii(img)
 
 def print_ascii(img, output=None):
+    if output != None:
+        output.update("")
+
     height = img.size[1]
     width = img.size[0]
 
@@ -87,4 +86,8 @@ def print_ascii(img, output=None):
         else:
             print(line)
 
-app()
+def main():
+    app()
+
+if __name__ == "__main__":
+    main()
