@@ -2,13 +2,17 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 import PySimpleGUI as sg
 import cv2
+import os
+from threading import Thread
 from logic import *
 
 sg.theme('DarkGrey13') 
 
+res_decrease = 1
+
 def app():
     current_image = None
-    resolution_decrease = 1
+    global res_decrease
 
     layout = [
         [sg.Text("Resolution decrease:", pad=((0, 0), (15, 0)), justification="center"), sg.Slider(range=(1, 100), expand_x=True, orientation="h", key='-SLIDER-')],
@@ -36,40 +40,25 @@ def app():
                 window["-IMAGE-"].update(data=photo_image)
 
         elif event == '-SLIDER- Release':
-            resolution_decrease = values['-SLIDER-']
+            res_decrease = values['-SLIDER-']
 
         elif event == 'Transform image':
             if current_image != None:
                 width = current_image.size[0]
                 height = current_image.size[1]
                 copy = current_image.copy()
-                copy.thumbnail(get_new_size(width, height, resolution_decrease), resample=Image.Resampling.BICUBIC)
+                copy.thumbnail(get_new_size(width, height, res_decrease), resample=Image.Resampling.BICUBIC)
                 print_ascii(copy, window["-OUTPUT-"])
             else:
                 sg.popup("You need to select an image first!", no_titlebar=True, button_type=5, auto_close=True, auto_close_duration=1)
         
         elif event == "Webcam":
-            webcam(window["-OUTPUT-"])
-
+            Thread(target=lambda : webcam(window["-OUTPUT-"])).start()
 
     window.close()
 
-def console_app():
-    file_path = filedialog.askopenfilename()
-    img = Image.open(file_path)
-
-    height = img.size[1]
-    width = img.size[0]
-
-    resolution_decrease = 2
-
-    img.thumbnail((math.floor(width / resolution_decrease), math.floor(height / resolution_decrease)), resample=Image.Resampling.BICUBIC)
-
-    print_ascii(img)
-
 def print_ascii(img, output=None):
-    if output != None:
-        output.update("")
+    text = ""
 
     height = img.size[1]
     width = img.size[0]
@@ -78,22 +67,29 @@ def print_ascii(img, output=None):
 
     for y in range(height):
         line = ""
+        
         for x in range(width):
             pixel = px[x, y]
             r, g, b = pixel[0], pixel[1], pixel[2]
             grayscale = get_grayscale(r, g, b)
             line += get_char(grayscale)
-        if output != None:
-            if output.get() == "":
-                output.update(line)
-            else:
-                output.update(output.get() + "\n" + line)
+
+        if text == "":
+            text = text + line
         else:
-            print(line)
+            text = text + "\n" + line
+        
+        if output != None:
+            output.update(text)
+        else:
+            print(text)
 
 def webcam(output=None):
+
+    global res_decrease
+
     cam = cv2.VideoCapture(0)
-    #cv2.namedWindow("test")
+    cv2.namedWindow("test")
 
     while True:
         ret, frame = cam.read()
@@ -105,14 +101,19 @@ def webcam(output=None):
         # flip the image
         flip = cv2.flip(frame,1)
 
-        #cv2.imshow("test", flip)
+        cv2.imshow("test", flip)
         image = Image.fromarray(flip)
-        image.thumbnail(get_new_size(image.size[0], image.size[1], 7), resample=Image.Resampling.BICUBIC)
+        image.thumbnail(get_new_size(image.size[0], image.size[1], res_decrease), resample=Image.Resampling.BICUBIC)
         print_ascii(image, output)
 
-    cam.release()
+        k = cv2.waitKey(1)
+        if k%256 == 27:
+            # ESC pressed
+            print("Escape hit, closing...")
+            break
 
-    #cv2.destroyAllWindows()
+    cam.release()
+    cv2.destroyAllWindows()
 
 def main():
     app()
