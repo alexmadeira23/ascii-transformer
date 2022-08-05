@@ -2,11 +2,10 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 import PySimpleGUI as sg
 import cv2
-import os
 from threading import Thread
 from logic import *
 
-sg.theme('DarkGrey13') 
+sg.theme('GrayGrayGray') 
 
 res_decrease = 1
 
@@ -53,7 +52,7 @@ def app():
                 sg.popup("You need to select an image first!", no_titlebar=True, button_type=5, auto_close=True, auto_close_duration=1)
         
         elif event == "Webcam":
-            Thread(target=lambda : webcam(window["-OUTPUT-"])).start()
+            Thread(target=lambda : webcam(window["-OUTPUT-"]), daemon=True).start()
 
     window.close()
 
@@ -79,10 +78,10 @@ def print_ascii(img, output=None):
         else:
             text = text + "\n" + line
         
-        if output != None:
-            output.update(text)
-        else:
-            print(text)
+    if output != None:
+        output.update(text)
+    else:
+        print(text)
 
 def webcam(output=None):
 
