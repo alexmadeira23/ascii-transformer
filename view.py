@@ -32,17 +32,25 @@ def app():
             window[IMAGE].update(data=photo_image)
 
     def resolution_release_action():
-        global res_decrease
-        res_decrease = values[RESOLUTION]
+        global settings
+        settings.set_resolution(values[RESOLUTION])
+
+    def light_release_action():
+        global settings
+        settings.change_light(int(values[LIGHT]))
+
+    def invert_action():
+        global settings
+        settings.invert()
 
     def transform_image_action():
         global current_image
-        global res_decrease
+        global settings
         if current_image != None:
             copy = current_image.copy()
             copy.thumbnail(get_new_size(current_image.size,
-                           res_decrease), resample=Image.Resampling.BICUBIC)
-            text = image_to_text(copy)
+                           settings._resolution), resample=Image.Resampling.BICUBIC)
+            text = image_to_text(settings, copy)
             window[OUTPUT].update(text)
         else:
             sg.popup("You need to select an image first!", no_titlebar=True,
@@ -58,6 +66,9 @@ def app():
             webcam_on = False
 
     # create class to store every setting called Settings
+    global settings
+    settings = Settings()
+
     global res_decrease
     global webcam_on
     global current_image
@@ -98,10 +109,10 @@ def app():
             resolution_release_action()
 
         elif event == LIGHT + ' Release':
-            print('Light')
+            light_release_action()
 
         elif event == INVERT:
-            print('Invert')
+            invert_action()
 
         elif event == TRANSFORM:
             transform_image_action()
@@ -113,7 +124,7 @@ def app():
 
 
 def webcam_job(output=None, show_video=False):
-    global res_decrease
+    global settings
     global webcam_on
     cam = cv2.VideoCapture(0)
 
@@ -130,9 +141,9 @@ def webcam_job(output=None, show_video=False):
             cv2.imshow("Camera", flipped)
 
         image = Image.fromarray(flipped)
-        image.thumbnail(get_new_size(image.size, res_decrease),
+        image.thumbnail(get_new_size(image.size, settings._resolution),
                         resample=Image.Resampling.BICUBIC)
-        text = image_to_text(image)
+        text = image_to_text(settings, image)
         output.update(text)
 
         cv2.waitKey(1)

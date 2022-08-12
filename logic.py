@@ -1,18 +1,21 @@
 import math
 
-CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
+CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'."
 
 class Settings:
 
     def __init__(self):
         self._resolution = 1
         self._inverted = False
-        self._chars = CHARS
+        self._chars = CHARS + ' '
 
     def set_resolution(self, res):
         self._resolution = res
 
-    def change_light(self, value):
+    def get_chars_size(self):
+        return len(self._chars)
+
+    def change_light(self, value: int):
         spaces = ''
         for _ in range(value):
             spaces = spaces + ' ' 
@@ -42,11 +45,13 @@ if BLACK_BACKGROUND:
 def get_grayscale(r, g, b):
     return RED_CONTRIBUTION * r + GREEN_CONTRIBUTION * g + BLUE_CONTRIBUTION * b
 
-def get_char(v):
-    index = math.floor(v * (CHARS_SIZE - 1) / MAX_INTENSITY)
-    return CHARS[index]
+def get_char(settings: Settings, v):
+    chars = settings._chars
+    chars_size = len(chars)
+    index = math.floor(v * (chars_size - 1) / MAX_INTENSITY)
+    return chars[index]
 
-def image_to_text(img):
+def image_to_text(settings: Settings, img):
     text = ""
 
     width = img.size[0]
@@ -61,7 +66,7 @@ def image_to_text(img):
             pixel = px[x, y]
             r, g, b = pixel[0], pixel[1], pixel[2]
             grayscale = get_grayscale(r, g, b)
-            line += get_char(grayscale)
+            line += get_char(settings, grayscale)
 
         if text == "":
             text = text + line
