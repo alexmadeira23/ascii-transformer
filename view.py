@@ -2,8 +2,9 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 import PySimpleGUI as sg
 import cv2
+import math
 from threading import Thread
-from logic import *
+from logic import Settings
 
 sg.theme('GrayGrayGray')
 
@@ -21,60 +22,51 @@ OUTPUT = "-OUTPUT-"
 
 def app():
 
+    # Auxiliary functions
+
     def choose_image_action():
-        global current_image
         file_path = filedialog.askopenfilename()
         if file_path != "":
-            current_image = Image.open(file_path)
-            thumbnail = current_image.copy()
+            settings._current_image = Image.open(file_path)
+            thumbnail = settings._current_image.copy()
             thumbnail.thumbnail((200, 1000), resample=Image.Resampling.BICUBIC)
             photo_image = ImageTk.PhotoImage(image=thumbnail)
             window[IMAGE].update(data=photo_image)
 
     def resolution_release_action():
-        global settings
-        settings.set_resolution(values[RESOLUTION])
+        settings._resolution = values[RESOLUTION]
 
     def light_release_action():
-        global settings
         settings.change_light(int(values[LIGHT]))
 
     def invert_action():
-        global settings
         settings.invert()
 
     def transform_image_action():
-        global current_image
-        global settings
+        current_image = settings._current_image
+        resolution = settings._resolution
         if current_image != None:
             copy = current_image.copy()
             copy.thumbnail(get_new_size(current_image.size,
-                           settings._resolution), resample=Image.Resampling.BICUBIC)
-            text = image_to_text(settings, copy)
+                           resolution), resample=Image.Resampling.BICUBIC)
+            text = settings.image_to_text(copy)
             window[OUTPUT].update(text)
         else:
             sg.popup("You need to select an image first!", no_titlebar=True,
                      button_type=5, auto_close=True, auto_close_duration=1)
 
     def webcam_action():
-        global webcam_on
-        if not webcam_on:
-            webcam_on = True
-            Thread(target=lambda: webcam_job(
-                window[OUTPUT], show_video=False), daemon=True).start()
+        if not settings._webcam_on:
+            settings.switch_webcam()
+            Thread(
+                target=lambda: webcam_job(window[OUTPUT], settings, show_video=False), daemon=True
+            ).start()
         else:
-            webcam_on = False
+            settings.switch_webcam()
 
-    # create class to store every setting called Settings
-    global settings
+    # App procedure
+
     settings = Settings()
-
-    global res_decrease
-    global webcam_on
-    global current_image
-    res_decrease = 1
-    webcam_on = False
-    current_image = None
 
     layout = [
         [sg.Text("Resolution decrease:", pad=((0, 0), (15, 0)), justification="center"),
@@ -90,8 +82,13 @@ def app():
          sg.Button(WEBCAM, expand_x=True), sg.Button(QUIT, expand_x=True)]
     ]
 
-    window = sg.Window('Ascii Transformer', layout,
-                       resizable=True, finalize=True)
+    window = sg.Window(
+        title='Ascii Transformer', 
+        layout=layout,
+        resizable=True, 
+        finalize=True
+    )
+    
     window.Maximize()
     window[RESOLUTION].bind('<ButtonRelease-1>', ' Release')
     window[LIGHT].bind('<ButtonRelease-1>', ' Release')
@@ -122,13 +119,10 @@ def app():
 
     window.close()
 
-
-def webcam_job(output=None, show_video=False):
-    global settings
-    global webcam_on
+def webcam_job(output=None, settings=None, show_video=False):
     cam = cv2.VideoCapture(0)
 
-    while webcam_on:
+    while settings._webcam_on:
         ret, frame = cam.read()
 
         if not ret:
@@ -143,7 +137,7 @@ def webcam_job(output=None, show_video=False):
         image = Image.fromarray(flipped)
         image.thumbnail(get_new_size(image.size, settings._resolution),
                         resample=Image.Resampling.BICUBIC)
-        text = image_to_text(settings, image)
+        text = settings.image_to_text(image)
         output.update(text)
 
         cv2.waitKey(1)
