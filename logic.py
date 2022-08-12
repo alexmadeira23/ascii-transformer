@@ -1,9 +1,33 @@
 import math
 
+CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
+
+class Settings:
+
+    def __init__(self):
+        self._resolution = 1
+        self._inverted = False
+        self._chars = CHARS
+
+    def set_resolution(self, res):
+        self._resolution = res
+
+    def change_light(self, value):
+        spaces = ''
+        for _ in range(value):
+            spaces = spaces + ' ' 
+        if self._inverted:
+            self._chars = spaces + CHARS
+        else:
+            self._chars = CHARS + spaces
+
+    def invert(self):
+        self._inverted = not self._inverted
+        self._chars = self._chars[::-1]
+
 BLACK_BACKGROUND = True
 
-#CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
-CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'.          "
+#CHARS = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'.          "
 
 CHARS_SIZE = len(CHARS)
 MAX_INTENSITY = 255

@@ -13,7 +13,7 @@ WEBCAM = "Webcam"
 QUIT = "Quit"
 
 RESOLUTION = "-RESOLUTION-"
-BLACK = "-BLACK-"
+LIGHT = "-LIGHT-"
 INVERT = "Invert"
 IMAGE = "-IMAGE-"
 OUTPUT = "-OUTPUT-"
@@ -68,9 +68,9 @@ def app():
     layout = [
         [sg.Text("Resolution decrease:", pad=((0, 0), (15, 0)), justification="center"),
          sg.Slider(range=(1, 100), expand_x=True, orientation="h", key=RESOLUTION)],
-        [sg.Text("Black level:", pad=((0, 0), (15, 0)), justification="center"),
-         sg.Slider(range=(1, 20), expand_x=True, orientation="h", key=BLACK)],
-        [sg.Checkbox(INVERT)],
+        [sg.Text("Light:", pad=((0, 0), (15, 0)), justification="center"),
+         sg.Slider(range=(1, 20), expand_x=True, orientation="h", key=LIGHT)],
+        [sg.Button(INVERT, expand_x=True,)],
         [sg.Image(size=(200, 200), key=IMAGE),
          sg.Multiline(size=(100, 20), disabled=True, expand_x=True,
                       expand_y=True, background_color="black", text_color="white", font="consolas", key=OUTPUT)],
@@ -83,6 +83,7 @@ def app():
                        resizable=True, finalize=True)
     window.Maximize()
     window[RESOLUTION].bind('<ButtonRelease-1>', ' Release')
+    window[LIGHT].bind('<ButtonRelease-1>', ' Release')
 
     while True:
         event, values = window.read()
@@ -95,6 +96,12 @@ def app():
 
         elif event == RESOLUTION + ' Release':
             resolution_release_action()
+
+        elif event == LIGHT + ' Release':
+            print('Light')
+
+        elif event == INVERT:
+            print('Invert')
 
         elif event == TRANSFORM:
             transform_image_action()
