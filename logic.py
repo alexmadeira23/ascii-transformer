@@ -22,8 +22,11 @@ class Settings:
         self._webcam_on = False
         self._current_image = None
 
-    def switch_webcam(self):
-        self._webcam_on = not self._webcam_on
+    def turn_webcam_on(self):
+        self._webcam_on = True
+
+    def turn_webcam_off(self):
+        self._webcam_on = False
 
     def change_light(self, value):
         spaces = ''

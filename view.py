@@ -57,12 +57,12 @@ def app():
 
     def webcam_action():
         if not settings._webcam_on:
-            settings.switch_webcam()
+            settings.turn_webcam_on()
             Thread(
                 target=lambda: webcam_job(window[OUTPUT], settings, show_video=False), daemon=True
             ).start()
         else:
-            settings.switch_webcam()
+            settings.turn_webcam_off()
 
     # App procedure
 
