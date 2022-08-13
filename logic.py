@@ -1,6 +1,6 @@
 import math
 
-CHARS = ".'`^\",:;Il!i><~+_-?][}{1)(|\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+CHARS = '.\'`^",:;Il!i><~+_-?][}{1)(|\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
 
 MAX_INTENSITY = 255
 
@@ -33,7 +33,7 @@ class Settings:
         for _ in range(value):
             spaces = spaces + ' '
         if self._inverted:
-            self._chars = CHARS + spaces
+            self._chars = CHARS[::-1] + spaces
         else:
             self._chars = spaces + CHARS
 
@@ -42,7 +42,7 @@ class Settings:
         self._chars = self._chars[::-1]
 
     def image_to_text(self, img):
-        text = ""
+        text = ''
 
         width = img.size[0]
         height = img.size[1]
@@ -50,7 +50,7 @@ class Settings:
         px = img.load()
 
         for y in range(height):
-            line = ""
+            line = ''
 
             for x in range(width):
                 pixel = px[x, y]
@@ -58,10 +58,10 @@ class Settings:
                 grayscale = get_grayscale(r, g, b)
                 line += self.__get_char(grayscale)
 
-            if text == "":
+            if text == '':
                 text = text + line
             else:
-                text = text + "\n" + line
+                text = text + '\n' + line
 
         return text
 
