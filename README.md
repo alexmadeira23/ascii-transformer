@@ -1,5 +1,8 @@
-# Ascii Transformer
+# ASCII Transformer
+This project is a tool for converting images and live webcam input into ASCII art.
 
-- Transform any image into an ascii version of itself;
-- Receive input directly from your webcam and transform it into ascii in real time;
-- Configure the light and resolution decrease from the original image to your liking.
+## Features
+- Convert image files (jpg, png, etc.) into ASCII art;
+- Real-time webcam input conversion into ASCII art;
+- Adjustable light and resolution settings for the input image;
+- Invert the tones of the output ASCII art.
